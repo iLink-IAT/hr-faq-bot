@@ -547,7 +547,7 @@ const answer =
     'No response received.';
 
         hideTyping();
-        addMessage(answer, 'bot');
+        await typeMessage(answer, 'bot');
     } catch (error) {
         hideTyping();
         addMessage(
