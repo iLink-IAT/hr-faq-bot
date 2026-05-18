@@ -471,7 +471,7 @@ function addMessage(text, sender) {
     chatBox.appendChild(row);
     chatBox.scrollTop = chatBox.scrollHeight;
 
-    const formattedHtml = formatResponse(text);
+    const formattedHtml = linkify(text);
 
     const temp = document.createElement('div');
     temp.innerHTML = formattedHtml;
@@ -481,7 +481,7 @@ function addMessage(text, sender) {
 
     for (let i = 0; i < plainText.length; i++) {
         currentText += plainText[i];
-        content.innerHTML = formatResponse(currentText);
+        content.innerHTML = linkify(currentText);
         chatBox.scrollTop = chatBox.scrollHeight;
 
         await new Promise(resolve => setTimeout(resolve, 15));
