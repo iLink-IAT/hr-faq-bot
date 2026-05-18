@@ -362,13 +362,12 @@ function generateGuid() {
     });
 }
 
-let sessionId = localStorage.getItem("chatSessionId");
-const guidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+// Create a brand-new session every time the page loads.
+// This prevents old conversation history from causing repeated responses.
+const sessionId = generateGuid();
 
-if (!sessionId || !guidPattern.test(sessionId)) {
-    sessionId = generateGuid();
-    localStorage.setItem("chatSessionId", sessionId);
-}
+// Optional cleanup: remove any previously stored session ID
+localStorage.removeItem("chatSessionId");
 
 const chatBox = document.getElementById("chatBox");
 const input = document.getElementById("userInput");
