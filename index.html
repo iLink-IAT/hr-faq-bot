@@ -1,95 +1,276 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>HR FAQ Chatbot</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f5f7fb;
-            margin: 0;
-            padding: 20px;
-        }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>iSARA - iLink Smart Applicant Response Assistant</title>
+<style>
+* { box-sizing: border-box; }
 
-        .chat-container {
-            max-width: 800px;
-            margin: auto;
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
+body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(135deg, #eef3ff 0%, #f8fafc 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
 
-        h1 {
-            text-align: center;
-        }
+.chat-app {
+    max-width: 980px;
+    height: calc(100vh - 40px);
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.12);
+    display: flex;
+    flex-direction: column;
+}
 
-        #chatBox {
-            height: 450px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            padding: 15px;
-            border-radius: 8px;
-            background: #fafafa;
-            margin-bottom: 15px;
-        }
+.header {
+    background: linear-gradient(135deg, #ffffff 0%, #f7f9fc 100%);
+    border-bottom: 1px solid #e5e7eb;
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
 
-        .user {
-            color: #0a66c2;
-            margin: 10px 0;
-        }
+.logo {
+    height: 40px;
+    width: auto;
+    flex-shrink: 0;
+}
 
-        .bot {
-            color: #1f7a1f;
-            margin: 10px 0;
-        }
+.bot-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #e53935, #f97316);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+    font-weight: 700;
+    flex-shrink: 0;
+    box-shadow: 0 8px 20px rgba(229, 57, 53, 0.25);
+}
 
-        .input-area {
-            display: flex;
-            gap: 10px;
-        }
+.header-info h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: #111827;
+}
 
-        input {
-            flex: 1;
-            padding: 12px;
-            font-size: 16px;
-        }
+.header-info p {
+    margin: 4px 0 0;
+    font-size: 14px;
+    color: #6b7280;
+}
 
-        button {
-            padding: 12px 20px;
-            background: #0a66c2;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-        }
+.status {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #10b981;
+    font-weight: 600;
+}
 
-        button:hover {
-            background: #084d96;
-        }
-    </style>
+.status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.12);
+}
+
+.chat-box {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    background:
+        radial-gradient(circle at top right, rgba(229, 57, 53, 0.03), transparent 30%),
+        radial-gradient(circle at bottom left, rgba(59, 130, 246, 0.03), transparent 30%),
+        #f8fafc;
+}
+
+.message-row {
+    display: flex;
+    margin-bottom: 16px;
+    animation: fadeInUp 0.25s ease;
+}
+
+.message-row.user { justify-content: flex-end; }
+.message-row.bot { justify-content: flex-start; }
+
+.message {
+    max-width: 78%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    line-height: 1.55;
+    font-size: 15px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+}
+
+.message.user {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: white;
+    border-bottom-right-radius: 6px;
+}
+
+.message.bot {
+    background: white;
+    color: #111827;
+    border: 1px solid #e5e7eb;
+    border-bottom-left-radius: 6px;
+}
+
+.message a {
+    color: inherit;
+    text-decoration: underline;
+    word-break: break-all;
+}
+
+.message.bot a { color: #2563eb; }
+
+.timestamp {
+    font-size: 11px;
+    margin-top: 6px;
+    opacity: 0.75;
+    text-align: right;
+}
+
+.typing {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.typing span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #9ca3af;
+    animation: bounce 1.2s infinite;
+}
+
+.typing span:nth-child(2) { animation-delay: 0.2s; }
+.typing span:nth-child(3) { animation-delay: 0.4s; }
+
+.input-container {
+    padding: 18px 20px;
+    background: #ffffff;
+    border-top: 1px solid #e5e7eb;
+}
+
+.input-wrapper {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    background: #f9fafb;
+    border: 1px solid #d1d5db;
+    border-radius: 20px;
+    padding: 10px;
+}
+
+#userInput {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 15px;
+    font-family: inherit;
+    resize: none;
+    min-height: 24px;
+    max-height: 120px;
+    line-height: 1.5;
+    padding: 8px 10px;
+}
+
+.send-btn {
+    width: 48px;
+    height: 48px;
+    border: none;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #e53935, #f97316);
+    color: white;
+    cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 24px rgba(229, 57, 53, 0.25);
+}
+
+.footer-note {
+    text-align: center;
+    font-size: 12px;
+    color: #9ca3af;
+    margin-top: 10px;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bounce {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; }
+    40% { transform: scale(1); opacity: 1; }
+}
+
+@media (max-width: 768px) {
+    body { padding: 0; }
+    .chat-app {
+        height: 100vh;
+        border-radius: 0;
+        max-width: 100%;
+    }
+    .status { display: none; }
+    .logo { height: 28px; }
+    .header-info h1 { font-size: 18px; }
+    .header-info p { font-size: 12px; }
+    .message { max-width: 88%; font-size: 14px; }
+}
+</style>
 </head>
 <body>
-    <div class="chat-container">
-        <h1>HR FAQ Assistant</h1>
-        <div id="chatBox"></div>
-
-        <div class="input-area">
-            <input
-                type="text"
-                id="userInput"
-                placeholder="Ask your question..."
-                onkeypress="if(event.key==='Enter') sendMessage()"
-            >
-            <button onclick="sendMessage()">Send</button>
+<div class="chat-app">
+    <div class="header">
+        <img class="logo" src="logo.png" alt="iLink Digital Logo">
+        <div class="bot-avatar">AI</div>
+        <div class="header-info">
+            <h1>iSARA</h1>
+            <p>iLink Smart Applicant Response Assistant</p>
+        </div>
+        <div class="status">
+            <span class="status-dot"></span>
+            Online
         </div>
     </div>
 
-    <script>
+    <div id="chatBox" class="chat-box"></div>
 
-        const API_URL = "https://hr-faq-proxy.gmalhotra51.workers.dev";
-        
+    <div class="input-container">
+        <div class="input-wrapper">
+            <textarea id="userInput" rows="1" placeholder="Type your question here..."></textarea>
+            <button id="sendBtn" class="send-btn" onclick="sendMessage()">➤</button>
+        </div>
+        <div class="footer-note">
+            Powered by iLink Digital AI • Available 24/7 for candidate queries
+        </div>
+    </div>
+</div>
 
-// Create one session ID per browser
+<script>
+const API_URL = "https://hr-faq-proxy.gmalhotra51.workers.dev";
+
 function generateGuid() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
         const r = Math.random() * 16 | 0;
@@ -99,8 +280,6 @@ function generateGuid() {
 }
 
 let sessionId = localStorage.getItem("chatSessionId");
-
-// If missing or not a valid GUID, create a new one
 const guidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 if (!sessionId || !guidPattern.test(sessionId)) {
@@ -108,28 +287,84 @@ if (!sessionId || !guidPattern.test(sessionId)) {
     localStorage.setItem("chatSessionId", sessionId);
 }
 
-async function sendMessage() {
-    const input = document.getElementById("userInput");
-    const message = input.value.trim();
+const chatBox = document.getElementById("chatBox");
+const input = document.getElementById("userInput");
+const sendBtn = document.getElementById("sendBtn");
 
+function getTime() {
+    const now = new Date();
+    return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function linkify(text) {
+    const escaped = escapeHtml(text);
+    return escaped.replace(
+        /(https?:\/\/[^\s]+)/g,
+        '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
+    );
+}
+
+function addMessage(text, sender) {
+    const row = document.createElement('div');
+    row.className = `message-row ${sender}`;
+
+    const bubble = document.createElement('div');
+    bubble.className = `message ${sender}`;
+    bubble.innerHTML = `${linkify(text)}<div class="timestamp">${getTime()}</div>`;
+
+    row.appendChild(bubble);
+    chatBox.appendChild(row);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function showTyping() {
+    const row = document.createElement('div');
+    row.className = 'message-row bot';
+    row.id = 'typingRow';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'message bot';
+    bubble.innerHTML = `
+        <div class="typing">
+            <span></span><span></span><span></span>
+        </div>
+    `;
+
+    row.appendChild(bubble);
+    chatBox.appendChild(row);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function hideTyping() {
+    const row = document.getElementById('typingRow');
+    if (row) row.remove();
+}
+
+function autoResize() {
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+}
+
+async function sendMessage() {
+    const message = input.value.trim();
     if (!message) return;
 
-    const chatBox = document.getElementById("chatBox");
-
-    // Show user message
-    chatBox.innerHTML += `<div class="user"><b>You:</b> ${message}</div>`;
-    input.value = "";
-
-    // Show typing message
-    chatBox.innerHTML += `<div class="bot" id="typing"><b>Bot:</b> Typing...</div>`;
-    chatBox.scrollTop = chatBox.scrollHeight;
+    addMessage(message, 'user');
+    input.value = '';
+    autoResize();
+    sendBtn.disabled = true;
+    showTyping();
 
     try {
         const response = await fetch(API_URL, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 userInput: message,
                 sessionId: sessionId
@@ -137,56 +372,53 @@ async function sendMessage() {
         });
 
         if (!response.ok) {
-            throw new Error("HTTP " + response.status);
+            throw new Error(`HTTP ${response.status}`);
         }
 
         const data = await response.json();
 
-        // Remove typing message
-        const typing = document.getElementById("typing");
-        if (typing) typing.remove();
+        const answer =
+            data?.responseData?.result ||
+            data?.response ||
+            data?.answer ||
+            data?.message ||
+            data?.output ||
+            data?.result ||
+            'No response received.';
 
-        // Try different possible response fields
-        let answer =
-            data.responseData?.result ||
-            data.response ||
-            data.answer ||
-            data.message ||
-            data.output ||
-            data.result ||
-            "No response received.";
-
-        // If the response itself is a string
-        if (typeof data === "string") {
-            answer = data;
-        }
-
-        // If nested response object exists
-        if (data.response && typeof data.response === "object") {
-            answer =
-                data.response.message ||
-                data.response.answer ||
-                JSON.stringify(data.response);
-        }
-
-        chatBox.innerHTML += `<div class="bot"><b>Bot:</b> ${answer}</div>`;
+        hideTyping();
+        addMessage(answer, 'bot');
+    } catch (error) {
+        hideTyping();
+        addMessage(
+            'Sorry, I am temporarily unable to respond. Please try again in a moment.',
+            'bot'
+        );
+        console.error('API Error:', error);
+    } finally {
+        sendBtn.disabled = false;
+        input.focus();
     }
-    catch (error) {
-        const typing = document.getElementById("typing");
-        if (typing) typing.remove();
-
-        chatBox.innerHTML += `
-            <div class="bot">
-                <b>Bot:</b> Error connecting to the chatbot.<br>
-                <small>${error.message}</small>
-            </div>`;
-
-        console.error("API Error:", error);
-    }
-
-    chatBox.scrollTop = chatBox.scrollHeight;
 }
-      
-    </script>
+
+input.addEventListener('input', autoResize);
+
+input.addEventListener('keydown', function(event) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendMessage();
+    }
+});
+
+window.addEventListener('load', function() {
+    setTimeout(() => {
+        addMessage(
+            'Hello, I am iSARA – iLink Smart Applicant Response Assistant. I am here to help answer your questions about careers, benefits, onboarding, and life at iLink Digital.',
+            'bot'
+        );
+        input.focus();
+    }, 400);
+});
+</script>
 </body>
 </html>
