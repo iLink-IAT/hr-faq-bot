@@ -390,36 +390,53 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-function linkify(text) {
+function formatResponse(text) {
+    if (!text) return "";
+
     // -------------------------------------------------
     // STEP 1: Fix URLs that contain spaces
-    // Example:
-    // https://www. ilink-digital. com/careers/
-    // becomes:
-    // https://www.ilink-digital.com/careers/
     // -------------------------------------------------
     text = text.replace(
         /https?:\/\/(?:\s*[A-Za-z0-9-]+\s*\.\s*)+[A-Za-z0-9-]+(?:\/[^\s]*)?/gi,
         function(match) {
-            // Remove all spaces inside the URL
             return match.replace(/\s+/g, '');
         }
     );
 
     // -------------------------------------------------
-    // STEP 2: Escape HTML
+    // STEP 2: Escape HTML for security
     // -------------------------------------------------
     const div = document.createElement('div');
     div.textContent = text;
-    const escaped = div.innerHTML;
+    let html = div.innerHTML;
 
     // -------------------------------------------------
-    // STEP 3: Convert URLs to clickable links
+    // STEP 3: Markdown formatting
     // -------------------------------------------------
-    return escaped.replace(
-        /(https?:\/\/[^\s]+)/gi,
+
+    // Bold: **text**
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+    // Italic: *text*
+    html = html.replace(/(^|[^*])\*(?!\*)(.*?)\*(?!\*)/g, '$1<em>$2</em>');
+
+    // Inline code: `text`
+    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+    // -------------------------------------------------
+    // STEP 4: Convert URLs to clickable links
+    // -------------------------------------------------
+    html = html.replace(
+        /(https?:\/\/[^\s<]+)/gi,
         '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
     );
+
+    // -------------------------------------------------
+    // STEP 5: Preserve line breaks
+    // -------------------------------------------------
+    html = html.replace(/\n/g, '<br>');
+
+    return html;
 }
 
 function addMessage(text, sender) {
