@@ -391,9 +391,33 @@ function escapeHtml(text) {
 }
 
 function linkify(text) {
-    const escaped = escapeHtml(text);
+    // -------------------------------------------------
+    // STEP 1: Fix URLs that contain spaces
+    // Example:
+    // https://www. ilink-digital. com/careers/
+    // becomes:
+    // https://www.ilink-digital.com/careers/
+    // -------------------------------------------------
+    text = text.replace(
+        /https?:\/\/(?:\s*[A-Za-z0-9-]+\s*\.\s*)+[A-Za-z0-9-]+(?:\/[^\s]*)?/gi,
+        function(match) {
+            // Remove all spaces inside the URL
+            return match.replace(/\s+/g, '');
+        }
+    );
+
+    // -------------------------------------------------
+    // STEP 2: Escape HTML
+    // -------------------------------------------------
+    const div = document.createElement('div');
+    div.textContent = text;
+    const escaped = div.innerHTML;
+
+    // -------------------------------------------------
+    // STEP 3: Convert URLs to clickable links
+    // -------------------------------------------------
     return escaped.replace(
-        /(https?:\/\/[^\s]+)/g,
+        /(https?:\/\/[^\s]+)/gi,
         '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
     );
 }
