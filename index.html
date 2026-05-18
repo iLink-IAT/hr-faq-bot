@@ -85,54 +85,94 @@
     </div>
 
     <script>
-        // =====================================
-        // PASTE YOUR API ENDPOINT URL BELOW
-        // =====================================
+
         const API_URL = "https://bluecoast-sk-eqe8f4e7e8gyfyds.eastus2-01.azurewebsites.net/api/iGenticAutonomousAgent/Executor/1320093f-cad0-4346-bfed-eb859143c00c";
 
-        async function sendMessage() {
-            const input = document.getElementById("userInput");
-            const message = input.value.trim();
+// Create one session ID per browser
+let sessionId = localStorage.getItem("chatSessionId");
+if (!sessionId) {
+    sessionId = "session-" + Date.now() + "-" + Math.random().toString(36).substring(2, 9);
+    localStorage.setItem("chatSessionId", sessionId);
+}
 
-            if (!message) return;
+async function sendMessage() {
+    const input = document.getElementById("userInput");
+    const message = input.value.trim();
 
-            const chatBox = document.getElementById("chatBox");
+    if (!message) return;
 
-            chatBox.innerHTML += `<div class="user"><b>You:</b> ${message}</div>`;
-            input.value = "";
+    const chatBox = document.getElementById("chatBox");
 
-            chatBox.innerHTML += `<div class="bot" id="typing"><b>Bot:</b> Typing...</div>`;
-            chatBox.scrollTop = chatBox.scrollHeight;
+    // Show user message
+    chatBox.innerHTML += `<div class="user"><b>You:</b> ${message}</div>`;
+    input.value = "";
 
-            try {
-                const response = await fetch(API_URL, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        message: message
-                    })
-                });
+    // Show typing message
+    chatBox.innerHTML += `<div class="bot" id="typing"><b>Bot:</b> Typing...</div>`;
+    chatBox.scrollTop = chatBox.scrollHeight;
 
-                const data = await response.json();
+    try {
+        const response = await fetch(API_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                userInput: message,
+                sessionId: sessionId
+            })
+        });
 
-                document.getElementById("typing").remove();
-
-                const answer =
-                    data.answer ||
-                    data.response ||
-                    data.message ||
-                    "No response received.";
-
-                chatBox.innerHTML += `<div class="bot"><b>Bot:</b> ${answer}</div>`;
-            } catch (error) {
-                document.getElementById("typing").remove();
-                chatBox.innerHTML += `<div class="bot"><b>Bot:</b> Error connecting to the chatbot.</div>`;
-            }
-
-            chatBox.scrollTop = chatBox.scrollHeight;
+        if (!response.ok) {
+            throw new Error("HTTP " + response.status);
         }
+
+        const data = await response.json();
+
+        // Remove typing message
+        const typing = document.getElementById("typing");
+        if (typing) typing.remove();
+
+        // Try different possible response fields
+        let answer =
+            data.response ||
+            data.answer ||
+            data.message ||
+            data.output ||
+            data.result ||
+            "No response received.";
+
+        // If the response itself is a string
+        if (typeof data === "string") {
+            answer = data;
+        }
+
+        // If nested response object exists
+        if (data.response && typeof data.response === "object") {
+            answer =
+                data.response.message ||
+                data.response.answer ||
+                JSON.stringify(data.response);
+        }
+
+        chatBox.innerHTML += `<div class="bot"><b>Bot:</b> ${answer}</div>`;
+    }
+    catch (error) {
+        const typing = document.getElementById("typing");
+        if (typing) typing.remove();
+
+        chatBox.innerHTML += `
+            <div class="bot">
+                <b>Bot:</b> Error connecting to the chatbot.<br>
+                <small>${error.message}</small>
+            </div>`;
+
+        console.error("API Error:", error);
+    }
+
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+      
     </script>
 </body>
 </html>
