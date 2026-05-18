@@ -452,6 +452,43 @@ function addMessage(text, sender) {
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
+ async function typeMessage(text, sender) {
+    const row = document.createElement('div');
+    row.className = `message-row ${sender}`;
+
+    const bubble = document.createElement('div');
+    bubble.className = `message ${sender}`;
+
+    const content = document.createElement('div');
+    const timestamp = document.createElement('div');
+    timestamp.className = 'timestamp';
+    timestamp.textContent = getTime();
+
+    bubble.appendChild(content);
+    bubble.appendChild(timestamp);
+    row.appendChild(bubble);
+
+    chatBox.appendChild(row);
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    const formattedHtml = formatResponse(text);
+
+    const temp = document.createElement('div');
+    temp.innerHTML = formattedHtml;
+    const plainText = temp.textContent || temp.innerText || '';
+
+    let currentText = '';
+
+    for (let i = 0; i < plainText.length; i++) {
+        currentText += plainText[i];
+        content.innerHTML = formatResponse(currentText);
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        await new Promise(resolve => setTimeout(resolve, 15));
+    }
+}
+   
+
 function showTyping() {
     const row = document.createElement('div');
     row.className = 'message-row bot';
