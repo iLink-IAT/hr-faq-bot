@@ -459,14 +459,103 @@ async function sendMessage() {
 
         const data = await response.json();
 
-        const answer =
-            data?.responseData?.result ||
-            data?.response ||
-            data?.answer ||
-            data?.message ||
-            data?.output ||
-            data?.result ||
-            'No response received.';
+       let answer =
+    data?.responseData?.result ||
+    data?.response ||
+    data?.answer ||
+    data?.message ||
+    data?.output ||
+    data?.result ||
+    'No response received.';
+
+/**
+ * Removes repeated paragraphs and repeated sentences
+ * from any response text.
+ */
+function cleanRepeatedText(text) {
+    if (!text) return text;
+
+    // Normalize line breaks
+    text = text.replace(/\r\n/g, '\n');
+
+    // -------------------------------------------------
+    // STEP 1: Remove duplicate paragraphs
+    // -------------------------------------------------
+    const paragraphs = text
+        .split(/\n{2,}|\n/)
+        .map(p => p.trim())
+        .filter(p => p.length > 0);
+
+    const uniqueParagraphs = [];
+    const seenParagraphs = new Set();
+
+    for (const paragraph of paragraphs) {
+        const normalized = paragraph
+            .replace(/\s+/g, ' ')
+            .trim()
+            .toLowerCase();
+
+        if (!seenParagraphs.has(normalized)) {
+            seenParagraphs.add(normalized);
+            uniqueParagraphs.push(paragraph);
+        }
+    }
+
+    let cleaned = uniqueParagraphs.join('\n\n');
+
+    // -------------------------------------------------
+    // STEP 2: Remove duplicate sentences
+    // -------------------------------------------------
+    const sentenceRegex = /[^.!?]+[.!?]+|[^.!?]+$/g;
+    const sentences = cleaned.match(sentenceRegex) || [];
+
+    const uniqueSentences = [];
+    const seenSentences = new Set();
+
+    for (const sentence of sentences) {
+        const normalized = sentence
+            .replace(/\s+/g, ' ')
+            .trim()
+            .toLowerCase();
+
+        if (!seenSentences.has(normalized)) {
+            seenSentences.add(normalized);
+            uniqueSentences.push(sentence.trim());
+        }
+    }
+
+    cleaned = uniqueSentences.join(' ');
+
+    // -------------------------------------------------
+    // STEP 3: Remove repeated large text blocks
+    // (useful when the same paragraph is concatenated
+    // many times without separators)
+    // -------------------------------------------------
+    for (let i = 20; i <= 500; i += 10) {
+        const chunk = cleaned.substring(0, i).trim();
+
+        if (chunk.length < 20) continue;
+
+        let count = 0;
+        let position = 0;
+
+        while (cleaned.indexOf(chunk, position) === position) {
+            count++;
+            position += chunk.length;
+        }
+
+        if (count >= 2) {
+            const remainder = cleaned.substring(position).trim();
+            cleaned = remainder || chunk;
+            break;
+        }
+    }
+
+    return cleaned.trim();
+}
+
+// Clean the response before displaying it
+answer = cleanRepeatedText(answer);
 
         hideTyping();
         addMessage(answer, 'bot');
