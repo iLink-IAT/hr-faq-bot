@@ -583,6 +583,26 @@ window.addEventListener('load', function() {
         input.focus();
     }, 400);
 });
+
+// Disable right-click
+document.addEventListener('contextmenu', function (e) {
+    e.preventDefault();
+});
+
+// Disable Developer Tools shortcuts
+document.addEventListener('keydown', function (e) {
+    const key = e.key.toUpperCase();
+
+    const blocked =
+        e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(key)) ||
+        (e.ctrlKey && key === 'U');
+
+    if (blocked) {
+        e.preventDefault();
+        return false;
+    }
+});    
 </script>
 </body>
 </html>
