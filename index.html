@@ -452,7 +452,7 @@ function addMessage(text, sender) {
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
- async function typeMessage(text, sender) {
+async function typeMessage(text, sender) {
     const row = document.createElement('div');
     row.className = `message-row ${sender}`;
 
@@ -460,6 +460,7 @@ function addMessage(text, sender) {
     bubble.className = `message ${sender}`;
 
     const content = document.createElement('div');
+
     const timestamp = document.createElement('div');
     timestamp.className = 'timestamp';
     timestamp.textContent = getTime();
@@ -471,21 +472,24 @@ function addMessage(text, sender) {
     chatBox.appendChild(row);
     chatBox.scrollTop = chatBox.scrollHeight;
 
-    const formattedHtml = linkify(text);
-
-    const temp = document.createElement('div');
-    temp.innerHTML = formattedHtml;
-    const plainText = temp.textContent || temp.innerText || '';
-
+    // Split into words instead of characters
+    const words = text.split(/\s+/);
     let currentText = '';
 
-    for (let i = 0; i < plainText.length; i++) {
-        currentText += plainText[i];
+    for (let i = 0; i < words.length; i++) {
+        currentText += (i === 0 ? '' : ' ') + words[i];
+
+        // Apply formatting to partial text
         content.innerHTML = linkify(currentText);
+
         chatBox.scrollTop = chatBox.scrollHeight;
 
-        await new Promise(resolve => setTimeout(resolve, 15));
+        // Typing speed in milliseconds
+        await new Promise(resolve => setTimeout(resolve, 35));
     }
+
+    // Final render to ensure complete formatting
+    content.innerHTML = linkify(text);
 }
    
 
