@@ -100,7 +100,10 @@ function generateGuid() {
 
 let sessionId = localStorage.getItem("chatSessionId");
 
-if (!sessionId) {
+// If missing or not a valid GUID, create a new one
+const guidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+if (!sessionId || !guidPattern.test(sessionId)) {
     sessionId = generateGuid();
     localStorage.setItem("chatSessionId", sessionId);
 }
