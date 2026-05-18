@@ -459,7 +459,7 @@ async function sendMessage() {
 
         const data = await response.json();
 
-       let answer =
+let answer =
     data?.responseData?.result ||
     data?.response ||
     data?.answer ||
@@ -469,30 +469,29 @@ async function sendMessage() {
     'No response received.';
 
 /**
- * Removes repeated paragraphs and repeated sentences
- * from any response text.
+ * Universal response cleaner
+ * Removes repeated content from any chatbot response.
  */
 function cleanRepeatedText(text) {
-    if (!text) return text;
+    if (!text || typeof text !== "string") return text;
 
-    // Normalize line breaks
-    text = text.replace(/\r\n/g, '\n');
+    // Normalize whitespace
+    text = text.replace(/\r\n/g, "\n").trim();
 
-    // -------------------------------------------------
-    // STEP 1: Remove duplicate paragraphs
-    // -------------------------------------------------
+    // ----------------------------------------------------
+    // STEP 1: Remove exact duplicate paragraphs
+    // ----------------------------------------------------
     const paragraphs = text
         .split(/\n{2,}|\n/)
         .map(p => p.trim())
-        .filter(p => p.length > 0);
+        .filter(Boolean);
 
     const uniqueParagraphs = [];
     const seenParagraphs = new Set();
 
     for (const paragraph of paragraphs) {
         const normalized = paragraph
-            .replace(/\s+/g, ' ')
-            .trim()
+            .replace(/\s+/g, " ")
             .toLowerCase();
 
         if (!seenParagraphs.has(normalized)) {
@@ -501,11 +500,46 @@ function cleanRepeatedText(text) {
         }
     }
 
-    let cleaned = uniqueParagraphs.join('\n\n');
+    let cleaned = uniqueParagraphs.join("\n\n");
 
-    // -------------------------------------------------
-    // STEP 2: Remove duplicate sentences
-    // -------------------------------------------------
+    // ----------------------------------------------------
+    // STEP 2: Remove duplicate URLs
+    // ----------------------------------------------------
+    const urlSeen = new Set();
+
+    cleaned = cleaned.replace(/https?:\/\/[^\s]+/gi, url => {
+        const normalized = url.toLowerCase();
+        if (urlSeen.has(normalized)) {
+            return "";
+        }
+        urlSeen.add(normalized);
+        return url;
+    });
+
+    // ----------------------------------------------------
+    // STEP 3: Detect repeated large text blocks
+    // This catches multiple full answers concatenated
+    // together even when wording is slightly different.
+    // ----------------------------------------------------
+    const repeatedIntroPatterns = [
+        /joining\s+ilink\s+digital/gi,
+        /there\s+are\s+several\s+great\s+reasons/gi,
+        /if\s+you['’]re\s+looking\s+for/gi,
+        /if\s+you\s+are\s+looking\s+for/gi
+    ];
+
+    for (const pattern of repeatedIntroPatterns) {
+        const matches = [...cleaned.matchAll(pattern)];
+
+        if (matches.length > 1) {
+            cleaned = cleaned.substring(0, matches[1].index).trim();
+            return cleaned;
+        }
+    }
+
+    // ----------------------------------------------------
+    // STEP 4: Remove duplicate sentences
+    // ----------------------------------------------------
     const sentenceRegex = /[^.!?]+[.!?]+|[^.!?]+$/g;
     const sentences = cleaned.match(sentenceRegex) || [];
 
@@ -514,9 +548,12 @@ function cleanRepeatedText(text) {
 
     for (const sentence of sentences) {
         const normalized = sentence
-            .replace(/\s+/g, ' ')
+            .replace(/\s+/g, " ")
             .trim()
             .toLowerCase();
+
+        // Skip very short fragments
+        if (normalized.length < 3) continue;
 
         if (!seenSentences.has(normalized)) {
             seenSentences.add(normalized);
@@ -524,37 +561,46 @@ function cleanRepeatedText(text) {
         }
     }
 
-    cleaned = uniqueSentences.join(' ');
+    cleaned = uniqueSentences.join(" ");
 
-    // -------------------------------------------------
-    // STEP 3: Remove repeated large text blocks
-    // (useful when the same paragraph is concatenated
-    // many times without separators)
-    // -------------------------------------------------
-    for (let i = 20; i <= 500; i += 10) {
-        const chunk = cleaned.substring(0, i).trim();
+    // ----------------------------------------------------
+    // STEP 5: Detect repeated large prefix blocks
+    // Example: same 500+ characters repeated multiple times
+    // ----------------------------------------------------
+    for (let size = 100; size <= 1000; size += 50) {
+        if (cleaned.length < size * 2) continue;
 
-        if (chunk.length < 20) continue;
+        const prefix = cleaned.substring(0, size).trim();
+        if (prefix.length < 50) continue;
 
-        let count = 0;
-        let position = 0;
+        const secondOccurrence = cleaned.indexOf(prefix, size);
 
-        while (cleaned.indexOf(chunk, position) === position) {
-            count++;
-            position += chunk.length;
-        }
-
-        if (count >= 2) {
-            const remainder = cleaned.substring(position).trim();
-            cleaned = remainder || chunk;
+        if (secondOccurrence > 0) {
+            cleaned = cleaned.substring(0, secondOccurrence).trim();
             break;
         }
     }
 
-    return cleaned.trim();
+    // ----------------------------------------------------
+    // STEP 6: Clean spacing
+    // ----------------------------------------------------
+    cleaned = cleaned
+        .replace(/[ \t]+\n/g, "\n")
+        .replace(/\n{3,}/g, "\n\n")
+        .replace(/[ ]{2,}/g, " ")
+        .trim();
+
+    // ----------------------------------------------------
+    // STEP 7: Fallback safety
+    // ----------------------------------------------------
+    if (!cleaned) {
+        cleaned = "No response received.";
+    }
+
+    return cleaned;
 }
 
-// Clean the response before displaying it
+// Apply universal cleaning
 answer = cleanRepeatedText(answer);
 
         hideTyping();
