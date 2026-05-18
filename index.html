@@ -87,11 +87,21 @@
     <script>
 
         const API_URL = "https://hr-faq-proxy.gmalhotra51.workers.dev";
+        
 
 // Create one session ID per browser
+function generateGuid() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
 let sessionId = localStorage.getItem("chatSessionId");
+
 if (!sessionId) {
-    sessionId = "session-" + Date.now() + "-" + Math.random().toString(36).substring(2, 9);
+    sessionId = generateGuid();
     localStorage.setItem("chatSessionId", sessionId);
 }
 
@@ -135,6 +145,7 @@ async function sendMessage() {
 
         // Try different possible response fields
         let answer =
+            data.responseData?.result ||
             data.response ||
             data.answer ||
             data.message ||
