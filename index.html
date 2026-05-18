@@ -10,7 +10,7 @@
 body {
     margin: 0;
     font-family: "Segoe UI", Arial, sans-serif;
-    background: linear-gradient(135deg, #eef3ff 0%, #f8fafc 100%);
+    background: linear-gradient(135deg, #0b0f14 0%, #111827 50%, #1f2937 100%);
     min-height: 100vh;
     padding: 20px;
 }
@@ -19,17 +19,19 @@ body {
     max-width: 980px;
     height: calc(100vh - 40px);
     margin: 0 auto;
-    background: #ffffff;
+    background: rgba(17, 24, 39, 0.96);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 24px;
     overflow: hidden;
-    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.12);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
     display: flex;
     flex-direction: column;
+    backdrop-filter: blur(14px);
 }
 
 .header {
-    background: linear-gradient(135deg, #ffffff 0%, #f7f9fc 100%);
-    border-bottom: 1px solid #e5e7eb;
+    background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     padding: 18px 24px;
     display: flex;
     align-items: center;
@@ -37,7 +39,7 @@ body {
 }
 
 .logo {
-    height: 25px;
+    height: 28px;
     width: auto;
     flex-shrink: 0;
 }
@@ -61,13 +63,13 @@ body {
     margin: 0;
     font-size: 24px;
     font-weight: 700;
-    color: #111827;
+    color: #ffffff;
 }
 
 .header-info p {
     margin: 4px 0 0;
     font-size: 14px;
-    color: #6b7280;
+    color: #9ca3af;
 }
 
 .status {
@@ -93,9 +95,9 @@ body {
     overflow-y: auto;
     padding: 24px;
     background:
-        radial-gradient(circle at top right, rgba(229, 57, 53, 0.03), transparent 30%),
-        radial-gradient(circle at bottom left, rgba(59, 130, 246, 0.03), transparent 30%),
-        #f8fafc;
+        radial-gradient(circle at top right, rgba(229, 57, 53, 0.06), transparent 30%),
+        radial-gradient(circle at bottom left, rgba(249, 115, 22, 0.05), transparent 30%),
+        #0f172a;
 }
 
 .message-row {
@@ -115,7 +117,7 @@ body {
     font-size: 15px;
     white-space: pre-wrap;
     word-wrap: break-word;
-    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.25);
 }
 
 .message.user {
@@ -125,19 +127,17 @@ body {
 }
 
 .message.bot {
-    background: white;
-    color: #111827;
-    border: 1px solid #e5e7eb;
+    background: #1f2937;
+    color: #f9fafb;
+    border: 1px solid rgba(255, 255, 255, 0.06);
     border-bottom-left-radius: 6px;
 }
 
 .message a {
-    color: inherit;
+    color: #60a5fa;
     text-decoration: underline;
     word-break: break-all;
 }
-
-.message.bot a { color: #2563eb; }
 
 .timestamp {
     font-size: 11px;
@@ -165,16 +165,16 @@ body {
 
 .input-container {
     padding: 18px 20px;
-    background: #ffffff;
-    border-top: 1px solid #e5e7eb;
+    background: #111827;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .input-wrapper {
     display: flex;
     align-items: flex-end;
     gap: 12px;
-    background: #f9fafb;
-    border: 1px solid #d1d5db;
+    background: #1f2937;
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 20px;
     padding: 10px;
 }
@@ -184,6 +184,7 @@ body {
     border: none;
     outline: none;
     background: transparent;
+    color: #ffffff;
     font-size: 15px;
     font-family: inherit;
     resize: none;
@@ -191,6 +192,10 @@ body {
     max-height: 120px;
     line-height: 1.5;
     padding: 8px 10px;
+}
+
+#userInput::placeholder {
+    color: #9ca3af;
 }
 
 .send-btn {
@@ -206,12 +211,23 @@ body {
     align-items: center;
     justify-content: center;
     box-shadow: 0 10px 24px rgba(229, 57, 53, 0.25);
+    transition: transform 0.15s ease;
+}
+
+.send-btn:hover {
+    transform: scale(1.05);
+}
+
+.send-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
 }
 
 .footer-note {
     text-align: center;
     font-size: 12px;
-    color: #9ca3af;
+    color: #6b7280;
     margin-top: 10px;
 }
 
@@ -227,16 +243,25 @@ body {
 
 @media (max-width: 768px) {
     body { padding: 0; }
+
     .chat-app {
         height: 100vh;
         border-radius: 0;
         max-width: 100%;
     }
+
     .status { display: none; }
-    .logo { height: 28px; }
+
+    .logo { height: 22px; }
+
     .header-info h1 { font-size: 18px; }
+
     .header-info p { font-size: 12px; }
-    .message { max-width: 88%; font-size: 14px; }
+
+    .message {
+        max-width: 88%;
+        font-size: 14px;
+    }
 }
 </style>
 </head>
@@ -244,11 +269,14 @@ body {
 <div class="chat-app">
     <div class="header">
         <img class="logo" src="logo.png" alt="iLink Digital Logo">
+
         <div class="bot-avatar">AI</div>
+
         <div class="header-info">
             <h1>iSARA</h1>
             <p>iLink Smart Applicant Response Assistant</p>
         </div>
+
         <div class="status">
             <span class="status-dot"></span>
             Online
@@ -293,7 +321,10 @@ const sendBtn = document.getElementById("sendBtn");
 
 function getTime() {
     const now = new Date();
-    return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return now.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit'
+    });
 }
 
 function escapeHtml(text) {
@@ -332,7 +363,9 @@ function showTyping() {
     bubble.className = 'message bot';
     bubble.innerHTML = `
         <div class="typing">
-            <span></span><span></span><span></span>
+            <span></span>
+            <span></span>
+            <span></span>
         </div>
     `;
 
@@ -364,7 +397,9 @@ async function sendMessage() {
     try {
         const response = await fetch(API_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({
                 userInput: message,
                 sessionId: sessionId
