@@ -527,7 +527,11 @@ async function sendMessage() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 userInput: message,
-                sessionId: sessionId
+                UserInputType: "",
+                sessionId: "",
+                isStreaming: false,
+                executionId: "",
+                connectionID: ""
             })
         });
 
