@@ -286,6 +286,32 @@ body {
     40% { transform: scale(1); opacity: 1; }
 }
 
+    .status-pulse {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #10b981;
+    display: inline-block;
+    animation: pulse 1.2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.4;
+    }
+
+    50% {
+        transform: scale(1.3);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(0.8);
+        opacity: 0.4;
+    }
+}
+
 @media (max-width: 768px) {
     body { padding: 0; }
     .chat-app {
@@ -504,16 +530,38 @@ function showTyping(text = "🤔 Thinking...") {
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
- function updateTyping(text) {
+let typingAnimation;
+
+function updateTyping(text) {
 
     const bubble = document.getElementById('typingBubble');
 
-    if (bubble) {
-        bubble.innerHTML = text;
-    }
-}   
+    if (!bubble) return;
+
+    clearInterval(typingAnimation);
+
+    let dots = 0;
+
+    typingAnimation = setInterval(() => {
+
+        dots = (dots + 1) % 4;
+
+        bubble.innerHTML = `
+            <span style="display:flex;align-items:center;gap:8px;">
+                <span class="status-pulse"></span>
+                ${text}${'.'.repeat(dots)}
+            </span>
+        `;
+
+    }, 500);
+}
+    
 function hideTyping() {
+
+    clearInterval(typingAnimation);
+
     const row = document.getElementById('typingRow');
+
     if (row) row.remove();
 }
 
