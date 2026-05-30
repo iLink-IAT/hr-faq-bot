@@ -487,20 +487,31 @@ async function typeMessage(text, sender) {
 }
    
 
-function showTyping() {
+function showTyping(text = "🤔 Thinking...") {
+
     const row = document.createElement('div');
     row.className = 'message-row bot';
     row.id = 'typingRow';
 
     const bubble = document.createElement('div');
     bubble.className = 'message bot';
-    bubble.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
+    bubble.id = 'typingBubble';
+
+    bubble.innerHTML = text;
 
     row.appendChild(bubble);
     chatBox.appendChild(row);
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
+ function updateTyping(text) {
+
+    const bubble = document.getElementById('typingBubble');
+
+    if (bubble) {
+        bubble.innerHTML = text;
+    }
+}   
 function hideTyping() {
     const row = document.getElementById('typingRow');
     if (row) row.remove();
@@ -567,11 +578,28 @@ while (true) {
                 line.replace('data:', '').trim()
             );
 
-            console.log('SSE Event:', json);
+console.log('SSE Event:', json);
 
-            if (json.Type === 'complete') {
-                answer = json.Result || answer;
-            }
+if (json.Type === 'status') {
+
+    const status = (json.Status || '').toLowerCase();
+
+    if (status.includes('thinking')) {
+        updateTyping('🤔 Thinking...');
+    }
+
+    else if (status.includes('drafting')) {
+        updateTyping('📝 Drafting answer...');
+    }
+
+    else {
+        updateTyping('⚡ Working...');
+    }
+}
+
+if (json.Type === 'complete') {
+    answer = json.Result || answer;
+}
 
         } catch (err) {
             console.log('Parse Error:', err);
