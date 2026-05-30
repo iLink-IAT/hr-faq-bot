@@ -523,32 +523,43 @@ async function sendMessage() {
 
     try {
         const response = await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                userInput: message,
-                UserInputType: "",
-                sessionId: "",
-                isStreaming: false,
-                executionId: "",
-                connectionID: ""
-            })
-        });
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        userInput: message,
+        UserInputType: "",
+        sessionId: "",
+        isStreaming: true,
+        executionId: "",
+        connectionID: ""
+    })
+});
 
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-const rawText = await response.text();
-
-console.log("Raw Response:", rawText);
+const reader = response.body.getReader();
+const decoder = new TextDecoder();
 
 let answer = 'No response received.';
+let buffer = '';
 
-// Look for the final complete event
-const lines = rawText.split('\n');
+while (true) {
 
-for (const line of lines) {
+    const { done, value } = await reader.read();
 
-    if (line.startsWith('data:')) {
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+
+    const events = buffer.split('\n\n');
+
+    buffer = events.pop();
+
+    for (const event of events) {
+
+        const line = event.trim();
+
+        if (!line.startsWith('data:')) continue;
 
         try {
 
@@ -556,18 +567,20 @@ for (const line of lines) {
                 line.replace('data:', '').trim()
             );
 
+            console.log('SSE Event:', json);
+
             if (json.Type === 'complete') {
                 answer = json.Result || answer;
             }
 
-        } catch (e) {
-            // Ignore non-JSON lines
+        } catch (err) {
+            console.log('Parse Error:', err);
         }
     }
 }
 
-        hideTyping();
-        await typeMessage(answer, 'bot');
+hideTyping();
+await typeMessage(answer, 'bot');
     } catch (error) {
         hideTyping();
         addMessage(
