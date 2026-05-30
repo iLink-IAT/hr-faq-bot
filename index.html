@@ -539,14 +539,34 @@ async function sendMessage() {
 
         const data = await response.json();
 
-const answer =
-    data?.responseData?.result ||
-    data?.response ||
-    data?.answer ||
-    data?.message ||
-    data?.output ||
-    data?.result ||
-    'No response received.';
+const rawText = await response.text();
+
+console.log("Raw Response:", rawText);
+
+let answer = 'No response received.';
+
+// Look for the final complete event
+const lines = rawText.split('\n');
+
+for (const line of lines) {
+
+    if (line.startsWith('data:')) {
+
+        try {
+
+            const json = JSON.parse(
+                line.replace('data:', '').trim()
+            );
+
+            if (json.Type === 'complete') {
+                answer = json.Result || answer;
+            }
+
+        } catch (e) {
+            // Ignore non-JSON lines
+        }
+    }
+}
 
         hideTyping();
         await typeMessage(answer, 'bot');
