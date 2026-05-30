@@ -189,6 +189,15 @@ body {
     border-bottom-left-radius: 6px;
 }
 
+    .typing-message {
+    display: inline-flex;
+    align-items: center;
+    width: auto !important;
+    max-width: fit-content !important;
+    min-width: 0 !important;
+    padding: 10px 14px !important;
+}
+
 .message a {
     color: var(--link-color);
     text-decoration: underline;
@@ -520,7 +529,7 @@ function showTyping(text = "🤔 Thinking...") {
     row.id = 'typingRow';
 
     const bubble = document.createElement('div');
-    bubble.className = 'message bot';
+    bubble.className = 'message bot typing-message';
     bubble.id = 'typingBubble';
 
     bubble.innerHTML = text;
