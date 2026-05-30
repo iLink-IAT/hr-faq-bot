@@ -537,8 +537,6 @@ async function sendMessage() {
 
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-        const data = await response.json();
-
 const rawText = await response.text();
 
 console.log("Raw Response:", rawText);
